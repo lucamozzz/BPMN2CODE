@@ -1,10 +1,11 @@
 
 class Node:
 
-    def __init__(self, node_id):
+    def __init__(self, node_id, type):
         self.id = node_id
         self.parents = []
         self.children = []
+        self.type = type
 
     def getId(self):
         return self.id
@@ -20,3 +21,6 @@ class Node:
 
     def addChild(self, child):
         self.children.append(child)
+
+    def getType(self):
+        return self.type

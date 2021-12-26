@@ -4,8 +4,7 @@ from Node import Node
 class ExclusiveGatewayNode(Node):
 
     def __init__(self, node_id):
-        super().__init__(node_id)
-        self.type = 'ExclusiveGateway'
+        super().__init__(node_id, 'ExclusiveGateway')
         self.condition = ''
         self.exit = False
         self.loop = False
@@ -15,3 +14,6 @@ class ExclusiveGatewayNode(Node):
 
     def setLoop(self, loop):
         self.loop = loop
+
+    def getExit(self):
+        return exit;
