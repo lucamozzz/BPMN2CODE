@@ -10,3 +10,9 @@ class ExclusiveGatewayNode(Node):
 
     def setLoop(self, loop):
         self.loop = loop
+
+    def setCondition(self, condition):
+        self.condition = condition
+
+    def getCondition(self):
+        return self.condition
