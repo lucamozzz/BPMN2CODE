@@ -38,7 +38,7 @@ class TranslateAlgorithm:
                 node.getType() == 'Sequence':
                     "for x in children:  \
                                 self.translate(x)",
-                node.getType() == 'CallActivity':
+                node.getType() == 'task':
                     " " + self.translate(node.name)
             }
         return switcher

@@ -1,10 +1,9 @@
-
 class Node:
 
     def __init__(self, node_id, type, isExit):
         self.id = node_id
-        self.parents = []
-        self.children = []
+        self.parents = list()
+        self.children = list()
         self.type = type
         self.isExit = isExit
 
@@ -22,6 +21,12 @@ class Node:
 
     def addChild(self, child):
         self.children.append(child)
+
+    def isLeaf(self):
+        if len(self.getChildren()) == 0:
+            return True
+        else:
+            return False
 
     def getType(self):
         return self.type
