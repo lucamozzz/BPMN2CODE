@@ -81,6 +81,7 @@ class Tree:
                                         n.getChildren().remove(figlio)
                                         node.getChildren().remove(child)
         self.complete_tree()
+        print("ok")
 
     def __set_child_to_root(self):
         for n in self.sons:
@@ -100,7 +101,10 @@ class Tree:
                     if node.getChildren().__contains__(n):
                         node.getChildren().remove(n)
                 self.sons.remove(n)
-            #     verificare, not ok
-            if n.getType() == 'EndEvent':
-                self.sons.remove(n)
+            for f in n.getChildren():
+                if f.getType() == 'EndEvent':
+                    n.getChildren().remove(f)
+                    self.sons.remove(f)
+        self.set_root(self.sons[0])
+        self.sons.remove(self.sons[0])
 
