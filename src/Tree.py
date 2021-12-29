@@ -55,8 +55,13 @@ class Tree:
         print(nodi_nipoti)
 
     def build_tree(self):
-        # todo - gestire il caso in cui un nodo è loop.
-        #
+        self.__build_tree()
+        self.__check_tree()
+        self.__complete_tree()
+        self.__case_loop()
+        print("ok")
+
+    def __build_tree(self):
         for node in self.sons:
             if not node.isLeaf():
                 for child in node.getChildren():
@@ -80,8 +85,25 @@ class Tree:
                                         n.addParent(node)
                                         n.getChildren().remove(figlio)
                                         node.getChildren().remove(child)
-        self.complete_tree()
-        print("ok")
+
+    def __check_tree(self):
+        for nodo in self.sons:
+            for f in nodo.getChildren():
+                if f.getType() == 'IncomingNode' or f.getType() == 'OutgoingNode':
+                    self.__build_tree()
+
+    def __case_loop(self):
+        for n in self.sons:
+            if n.getType() == 'ExclusiveGateway':
+                for p in n.getParents():
+                    if p.getType() == 'ExclusiveGateway' and p.getLoop():
+                        n.getParents().remove(p)
+                        n.setLoop(True)
+                        self.sons.remove(p)
+                for figlio in n.getChildren():
+                    for f in figlio.getChildren():
+                        if f.getType() == 'ExclusiveGateway' and f.getLoop():
+                            figlio.getChildren().remove(f)
 
     def __set_child_to_root(self):
         for n in self.sons:
@@ -93,7 +115,7 @@ class Tree:
                         figlio.addParent(self.sons[0])
                         self.sons[0].addChild(figlio)
 
-    def complete_tree(self):
+    def __complete_tree(self):
         for n in self.sons:
             if n.getIsExit():
                 self.__set_child_to_root()
@@ -107,4 +129,10 @@ class Tree:
                     self.sons.remove(f)
         self.set_root(self.sons[0])
         self.sons.remove(self.sons[0])
+        self.__remove_end_event()
+
+    def __remove_end_event(self):
+        for n in self.sons:
+            if n.getType() == 'EndEvent':
+                self.sons.remove(n)
 
