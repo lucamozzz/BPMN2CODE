@@ -100,6 +100,7 @@ class Tree:
                         n.getParents().remove(p)
                         n.setLoop(True)
                         self.sons.remove(p)
+                        self.size -= 1
                 for figlio in n.getChildren():
                     for f in figlio.getChildren():
                         if f.getType() == 'ExclusiveGateway' and f.getLoop():
@@ -112,8 +113,9 @@ class Tree:
                     if not figlio.getIsExit() and not figlio.getType() == 'EndEvent':
                         for node in figlio.getParents():
                             figlio.getParents().remove(node)
-                        figlio.addParent(self.sons[0])
-                        self.sons[0].addChild(figlio)
+                        if not self.sons[0].getChildren().__contains__(figlio):
+                            figlio.addParent(self.sons[0])
+                            self.sons[0].addChild(figlio)
 
     def __complete_tree(self):
         for n in self.sons:
@@ -123,16 +125,20 @@ class Tree:
                     if node.getChildren().__contains__(n):
                         node.getChildren().remove(n)
                 self.sons.remove(n)
+                self.size -= 1
             for f in n.getChildren():
                 if f.getType() == 'EndEvent':
                     n.getChildren().remove(f)
                     self.sons.remove(f)
+                    self.size -= 1
         self.set_root(self.sons[0])
         self.sons.remove(self.sons[0])
+        self.size -= 1
         self.__remove_end_event()
 
     def __remove_end_event(self):
         for n in self.sons:
             if n.getType() == 'EndEvent':
                 self.sons.remove(n)
+                self.size -= 1
 
