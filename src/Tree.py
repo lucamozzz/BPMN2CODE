@@ -60,6 +60,7 @@ class Tree:
         self.__complete_tree()
         self.__case_loop()
         print("ok")
+        return self
 
     def __build_tree(self):
         for node in self.sons:
