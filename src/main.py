@@ -8,6 +8,7 @@ if __name__ == '__main__':
     tree = parser.tree.build_tree()
 
     translator = TranslateAlgorithm()
-    print(translator.translate(tree.get_root()))
+    result = open('C:\\Users\\Riccardo\\PycharmProjects\\BPMN2CODE\\result.txt', 'w')
+    print(translator.translate(tree.get_root()), file=result)
 
 

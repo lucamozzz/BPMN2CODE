@@ -1,0 +1,29 @@
+	if primoG: 
+		A
+
+	else : 
+ 		if figlioP: 
+		if figlioFiglioP: 
+		C
+
+	else : 
+ 		D
+
+
+	else : 
+ 		B
+
+
+	if secondoG: 
+		H
+
+	else : 
+ 		G
+
+if sequenza: 
+		F
+
+else : 
+ 		E
+
+
