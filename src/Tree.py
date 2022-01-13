@@ -118,28 +118,23 @@ class Tree:
             if n.getType() == 'ExclusiveGateway':
                 if not n.getIsExit():
                     self.countOpen += 1
-                    seq = None
-                    self.__visit(n, seq)
+                    self.__visit(n)
                     if self.countOpen == 0:
                         self.__set_sequence_node_to_start()
                         break
 
-    def __visit(self, n, seq):
+    def __visit(self, n):
         for figlio in n.getChildren():
             if (figlio.getType() == 'ExclusiveGateway' and not figlio.getLoop()) or (
                     figlio.getType() == 'ParallelGateway'):
                 if not figlio.getIsExit():
                     self.countOpen += 1
-                    if seq.getId() == figlio.getId():
-                        seq.addChild(figlio)
                 else:
                     self.countOpen -= 1
                     self.__check_ric_on_new_child_of_root(figlio)
                 self.ric_component(figlio)
             elif figlio.getType() == 'task':
                 # se figlio è una foglia (task) e ha come figlio un nodo di uscita:
-                if figlio.getId() == seq.getId():
-                    seq.addChild(figlio)
                 self.ric_component(figlio)
 
     def ric_component(self, figlio):
