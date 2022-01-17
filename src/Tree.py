@@ -93,6 +93,7 @@ class Tree:
             if p.getType() == 'ExclusiveGateway' and p.getLoop():
                 n.getParents().remove(p)
                 n.setLoop(True)
+                p.setExit(True)
                 self.sons.remove(p)
                 self.size -= 1
         for figlio in n.getChildren():

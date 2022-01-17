@@ -20,6 +20,7 @@ class BPMNParser:
         self.connections = []
         self.annotations = []
         self.nodes = []
+        self.sequenceFlows = []
 
     def parse_nodes(self):
         for child in self.root:
@@ -71,11 +72,16 @@ class BPMNParser:
     def getAnnotations(self):
         return self.annotations
 
+    def getSequenceFlows(self):
+        return self.sequenceFlows
+
     def __set_child_incoming_outgoing(self):
         for child in self.root:
             tag_type = child.tag[45:len(child.tag)]
-            if tag_type == 'sequenceFlow' or tag_type == 'association' or tag_type == 'textAnnotation':
+            if tag_type == 'association' or tag_type == 'textAnnotation':
                 continue
+            elif tag_type == 'sequenceFlow':
+                self.sequenceFlows.append(child)
             else:
                 node = self.object_type_of_node(child)
                 for conn in child:
