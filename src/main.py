@@ -1,12 +1,18 @@
 from BPMNParser import BPMNParser
 from Validator import Validator
 
+from src.TranslateAlgorithm import TranslateAlgorithm
 
 if __name__ == '__main__':
-    #TODO Cambiare percorso file .bpmn con argomento in input
-    parser = BPMNParser('C:\\Users\\alessandro\\Documents\\PycharmProjects-workspace\\BPMN2CODE\\test.bpmn')
+    parser = BPMNParser('test.bpmn')
     parser.parse_nodes()
     parser.connect_nodes()
-    parser.tree.build_tree()
     validator = Validator(parser)
     validator.validate()
+    tree = parser.tree.build_tree()
+
+    translator = TranslateAlgorithm()
+    result = open('result.txt', 'w')
+    print(translator.translate(tree.get_root()), file=result)
+
+

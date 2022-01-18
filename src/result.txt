@@ -1,0 +1,20 @@
+for x in children: 
+	if primoG: 
+		if figlioP: 
+			B
+		else : 
+ 			if figlioFiglioP: 
+				C
+			else : 
+ 				D
+
+
+	else : 
+ 		A
+
+	if secondoG: 
+		H
+	else : 
+ 		G
+
+
