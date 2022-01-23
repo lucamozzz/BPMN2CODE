@@ -1,20 +1,55 @@
 for x in children: 
 	if primoG: 
-		if figlioP: 
-			B
-		else : 
- 			if figlioFiglioP: 
-				C
-			else : 
- 				D
+		for x in children: 
+			A
+				S
+					if : 
+						
+						if : 
+							
+							r
+						else : 
+ 							
+							q
 
+					else : 
+ 						for x in children: 
+							w
+								runInParallel(children) :
+								runInParallel(children) :
+																		
+									m
+																		
+									v
 
 	else : 
- 		A
+ 		for x in children: 
+			if figlioP: 
+				
+				if figlioFiglioP: 
+					
+					D
+				else : 
+ 					
+					C
+
+			else : 
+ 				
+				B
+
+						if sequenza: 
+							
+							E
+						else : 
+ 							
+							F
+
 
 	if secondoG: 
-		H
+		
+		G
 	else : 
- 		G
+ 		
+		H
 
 

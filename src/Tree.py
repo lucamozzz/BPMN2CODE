@@ -1,7 +1,4 @@
 from Node import Node
-from src.ExclusiveGatewayNode import ExclusiveGatewayNode
-from src.IncomingNode import IncomingNode
-from src.OutgoingNode import OutgoingNode
 from src.SequenceNode import SequenceNode
 
 
@@ -13,8 +10,8 @@ class Tree:
         self.depth = 0
         self.sons = list()
         self.countOpen = 0
-        self.flag2 = False
-        self.flag = False
+        self.flagEnd = False
+        self.flagExit = False
         self.temp_lis_to_exit_node = list()
 
     def get_root(self):
@@ -48,8 +45,8 @@ class Tree:
         self.__case_loop()
         self.__visit_and_set_child_to_root()
         self.__set_sequence_node_to_start()
+        self.__setSequence()
         self.__complete_tree()
-        print("ok")
         return self
 
     def __build_tree(self):
@@ -96,11 +93,9 @@ class Tree:
                 p.setExit(True)
                 self.sons.remove(p)
                 self.size -= 1
-        for figlio in n.getChildren():
-            for f in figlio.getChildren():
-                if f.getType() == 'ExclusiveGateway' and f.getLoop():
-                    figlio.getChildren().remove(f)
-                    for ff in f.getChildren():
+                for figlio in n.getChildren():
+                    figlio.getChildren().remove(p)
+                    for ff in p.getChildren():
                         figlio.getChildren().append(ff)
                         ff.getParents().append(figlio)
 
@@ -139,11 +134,11 @@ class Tree:
                 self.ric_component(figlio)
 
     def ric_component(self, figlio):
-        self.flag2 = False
+        self.flagEnd = False
         node = None
         for f in figlio.getChildren():
             if f.getType() == 'EndEvent':
-                self.flag2 = True
+                self.flagEnd = True
                 break
             if (f.getType() == 'ExclusiveGateway' and not f.getLoop()) or f.getType() == 'ParallelGateway':
                 if not f.getIsExit():
@@ -159,14 +154,14 @@ class Tree:
                         if not ff.getIsExit():
                             self.ric_child_in_component(f)
                         else:
-                            if self.flag is False and not self.temp_lis_to_exit_node.__contains__(ff):
-                                self.flag = True
+                            if self.flagExit is False and not self.temp_lis_to_exit_node.__contains__(ff):
+                                self.flagExit = True
                                 self.__check_exit_node(ff)
                                 self.temp_lis_to_exit_node.append(ff)
-                            elif self.flag:
-                                self.flag = False
+                            elif self.flagExit:
+                                self.flagExit = False
             node = f
-        if not self.flag2:
+        if not self.flagEnd:
             self.ric_component(node)
 
     def __check_exit_node(self, f):
@@ -187,7 +182,7 @@ class Tree:
                     self.ric_child_in_component(child)
                 else:
                     if not child.getIsExit() and child.getType() == 'ParallelGateway' or \
-                            (child.getType() == 'ExclusiveGateway' and not child.getLoop() and not child.getIsExit()):  # controllare
+                            (child.getType() == 'ExclusiveGateway' and not child.getLoop() and not child.getIsExit()):
                         self.countOpen += 1
                         self.ric_component(child)
                     elif child.getType() == 'ExclusiveGateway' and child.getLoop():
@@ -210,47 +205,60 @@ class Tree:
         self.sons[0].addChild(seq)
         self.insert(seq)
 
-    def __Set_Sequence(self, nodo, seq): #TODO-DA TESTARE. PER IL MOMENTO L'HO SOLO SCRITTO E PROVATO SU CARTA,
-                                        #ma bisogna aggiungere qualcosa sicuramente perche cosi la seq non è mai null.
-        flag3 = False
-        for figlio in nodo.getChildren():
+    def __setSequence(self):
+        seq = None
+        for figlio in self.sons[0].getChildren():
+            if figlio.getType() == "Sequence":
+                for child in figlio.getChildren():
+                    if child.getType() != "task":
+                        self.__ric_set_sequence(child, seq)
+    count = 0
+
+    def __ric_set_sequence(self, nodoApertura, seq):
+        for figlio in nodoApertura.getChildren():
             if figlio.getType() == "task":
-                if seq is None:
-                    seq = SequenceNode(figlio.getId())
-                    self.insert(seq)
+                if self.count < 1:
+                    seq = self.setChildParent(figlio, nodoApertura)
                 else:
                     seq.addChild(figlio)
-            if (figlio.getType() == "ExclusiveGateway" or figlio.getType() == "ParallelGateway") \
-                    and not figlio.getIsExit():
-                if seq is None:
-                    seq = SequenceNode(figlio.getId())
-                    self.insert(seq)
-                else:
+                    if figlio.getType() != "task":
+                        self.__ric_set_sequence(figlio, seq)
+                for nipote in figlio.getChildren():
+                    if not nipote.getIsExit():
+                        self.count += 1
+                        self.__ric_set_sequence(figlio, seq)
+                    else:
+                        exit = nipote
+                        self.count = 0
+                        if not exit.isLeaf():
+                            for f in exit.getChildren():
+                                if not f.getIsExit():
+                                    for seq in self.sons:
+                                        if seq.getType() == "Sequence":
+                                            if seq.getId() == nodoApertura.getId():
+                                                seq.addChild(f)
+                                                self.__ric_set_sequence(f, seq)
+            else:
+                if self.count >= 1:
                     seq.addChild(figlio)
-            for nipote in figlio.getChildren():
-                if nipote.getIsExit() and self.countOpen == 1: #controllare come fare per il count
-                    if not nipote.isLeaf():
-                        for nipotino in nipote.getChildren():
-                            seq.addChild(nipotino)
-                            self.__Set_Sequence(nipote,
-                                                seq)  #controllare se la sequenza che devo passare qui deve essere nulla o no.
+                    self.count = 0
                 else:
-                    if nipote.getType() == "task":
-                        seq.addChild(figlio.getId())
-                        flag3 = True
-                    if nipote.getType() != "task" and not nipote.getIsExit():
-                        seq = SequenceNode(nipote.getId())
-                        self.insert(seq)
-                        flag3 = True
-                    if flag3 is False:
-                        self.__Set_Sequence(nipote, seq)  #controllare se la seq deve essere nulla o no.
+                    seq = self.setChildParent(figlio, nodoApertura)
+                self.__ric_set_sequence(figlio, seq)
 
-
-
+    def setChildParent(self, figlio, nodoApertura):
+        seq = SequenceNode(figlio.id)
+        seq.addParent(nodoApertura)
+        nodoApertura.addChildIn(0, seq)
+        nodoApertura.getChildren().remove(figlio)
+        seq.addChild(figlio)
+        for padre in figlio.getParents():
+            figlio.getParents().remove(padre)
+        figlio.addParent(seq)
+        self.insert(seq)
+        return seq
 
     def __complete_tree(self):
-        # for nn in self.sons: if nn.getIsExit(): for child in nn.getChildren(): if not child.getIsExit(): pass #se
-        # il figlio di un nodo di uscita non è di uscita bisogna aggiungerlo alla sequenza corrispondente.
         for n in self.sons:
             if n.getIsExit():
                 for node in self.sons:

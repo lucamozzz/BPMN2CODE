@@ -22,6 +22,9 @@ class Node:
     def addChild(self, child):
         self.children.append(child)
 
+    def addChildIn(self, index, child):
+        self.children.insert(index, child)
+
     def isLeaf(self):
         if len(self.getChildren()) == 0:
             return True
