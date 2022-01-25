@@ -11,7 +11,7 @@ if __name__ == '__main__':
     validator.validate()
     tree = parser.tree.build_tree()
     translator = TranslateAlgorithm()
-    result = open('result.txt', 'w')
+    result = open('result.py', 'w')
     print(translator.translate(tree.get_root()), file=result)
 
 

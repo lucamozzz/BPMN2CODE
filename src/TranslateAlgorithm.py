@@ -15,6 +15,7 @@ class TranslateAlgorithm:
         children = node.getChildren()
         output = ""
         if node.getType() == 'StartEvent':
+            output = "if __name__ == '__main__':\n"
             for x in children:
                 output += self.translate(x)
         if node.getType() == 'ExclusiveGateway' and node.loop == False:
@@ -27,8 +28,7 @@ class TranslateAlgorithm:
                 children[0]) + "if " + node.condition + ":" + "\n " + self.indentationMethod(
                 children[0]) + "\tbreak\n"
         elif node.getType() == 'ParallelGateway':
-            output = self.indentationMethod(node) + "runInParallel(children) :\n"
-            output += self.runInParallel(children, output)
+            output += self.runInParallel(children, self.indentationMethod(node) + "runInParallel(children) :\n")
         elif node.getType() == 'Sequence':
             stringForChildren = ""
             if self.nChildren(node) != 1:
@@ -55,7 +55,7 @@ class TranslateAlgorithm:
         i = ""
         parents = node.getParents()
         if parents[0].getType() == 'StartEvent':
-            i += ""
+            i += "\t"
         elif parents[0].getType() == 'Sequence' and self.nChildren(parents[0]) == 1:
             i += self.indentationMethod(parents[0])
         else:
