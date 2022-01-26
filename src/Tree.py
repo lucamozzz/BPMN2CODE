@@ -44,7 +44,6 @@ class Tree:
         self.__check_tree()
         self.__case_loop()
         self.__visit_and_set_child_to_root()
-        self.__set_sequence_node_to_start()
         self.__setSequence()
         self.__complete_tree()
         return self
@@ -89,15 +88,15 @@ class Tree:
         for p in n.getParents():
             if p.getType() == 'ExclusiveGateway' and p.getLoop():
                 n.getParents().remove(p)
+                p.getChildren().remove(n)
                 n.setLoop(True)
                 p.setExit(True)
-                self.sons.remove(p)
-                self.size -= 1
-                for figlio in n.getChildren():
-                    figlio.getChildren().remove(p)
-                    for ff in p.getChildren():
-                        figlio.getChildren().append(ff)
-                        ff.getParents().append(figlio)
+                p.setLoop(False)
+                for figlio in p.getChildren():
+                    if figlio.getType() != "EndEvent" and figlio != n:
+                        for padreDiLoop in p.getParents():
+                            padreDiLoop.addChild(figlio)
+                            figlio.getParents().append(padreDiLoop)
 
     def __set_child_to_root(self, n):
         for figlio in n.getChildren():
@@ -111,7 +110,7 @@ class Tree:
 
     def __visit_and_set_child_to_root(self):
         for n in self.sons:
-            if n.getType() == 'ExclusiveGateway':
+            if n.getType() == 'ExclusiveGateway' or n.getType() == 'ParallelGateway':
                 if not n.getIsExit():
                     self.countOpen += 1
                     self.__visit(n)
@@ -140,7 +139,7 @@ class Tree:
             if f.getType() == 'EndEvent':
                 self.flagEnd = True
                 break
-            if (f.getType() == 'ExclusiveGateway' and not f.getLoop()) or f.getType() == 'ParallelGateway':
+            if (f.getType() == 'ExclusiveGateway' and not f.getLoop()) or f.getType() != 'task':
                 if not f.getIsExit():
                     self.countOpen += 1
                     self.ric_component(f)
@@ -212,6 +211,7 @@ class Tree:
                 for child in figlio.getChildren():
                     if child.getType() != "task":
                         self.__ric_set_sequence(child, seq)
+
     count = 0
 
     def __ric_set_sequence(self, nodoApertura, seq):
@@ -236,8 +236,9 @@ class Tree:
                                     for seq in self.sons:
                                         if seq.getType() == "Sequence":
                                             if seq.getId() == nodoApertura.getId():
-                                                seq.addChild(f)
-                                                self.__ric_set_sequence(f, seq)
+                                                if not seq.getChildren().__contains__(f):
+                                                    seq.addChild(f)
+                                                    self.__ric_set_sequence(f, seq)
             else:
                 if self.count >= 1:
                     seq.addChild(figlio)
@@ -257,27 +258,38 @@ class Tree:
         figlio.addParent(seq)
         self.insert(seq)
         return seq
-
+    to_remove = list()
     def __complete_tree(self):
         for n in self.sons:
             if n.getIsExit():
+                self.to_remove.append(n)
                 for node in self.sons:
                     if node.getChildren().__contains__(n):
                         node.getChildren().remove(n)
-                self.sons.remove(n)
-                self.size -= 1
+                    if node.getParents().__contains__(n):
+                        node.getParents().remove(n)
             for f in n.getChildren():
                 if f.getType() == 'EndEvent':
                     n.getChildren().remove(f)
-                    self.sons.remove(f)
-                    self.size -= 1
+                    self.to_remove.append(n)
         self.set_root(self.sons[0])
         self.sons.remove(self.sons[0])
         self.size -= 1
+        self.__check_exitNode_and_remove()
         self.__remove_end_event()
+
+    def __check_exitNode_and_remove(self):
+        for el in self.to_remove:
+            for nodo in self.sons:
+                if el == nodo:
+                    self.sons.remove(nodo)
+                    self.size -= 1
 
     def __remove_end_event(self):
         for n in self.sons:
             if n.getType() == 'EndEvent':
+                self.sons.remove(n)
+                self.size -= 1
+            if n.getIsExit():
                 self.sons.remove(n)
                 self.size -= 1
