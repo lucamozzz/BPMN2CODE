@@ -238,6 +238,7 @@ class Tree:
                                             if seq.getId() == nodoApertura.getId():
                                                 if not seq.getChildren().__contains__(f):
                                                     seq.addChild(f)
+                                                    f.addParent(seq)
                                                     self.__ric_set_sequence(f, seq)
             else:
                 if self.count >= 1:
@@ -258,7 +259,9 @@ class Tree:
         figlio.addParent(seq)
         self.insert(seq)
         return seq
+
     to_remove = list()
+
     def __complete_tree(self):
         for n in self.sons:
             if n.getIsExit():
