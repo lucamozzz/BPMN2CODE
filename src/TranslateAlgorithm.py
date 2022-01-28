@@ -28,12 +28,8 @@ class TranslateAlgorithm:
                 children[0]) + "if " + node.condition + ":" + "\n " + self.indentationMethod(
                 children[0]) + "\tbreak\n"
         elif node.getType() == 'ParallelGateway':
-            output += self.runInParallel(children, self.indentationMethod(node) + "runInParallel(children) :\n")
+            output += self.runInParallel(children, output)
         elif node.getType() == 'Sequence':
-            stringForChildren = ""
-            if self.nChildren(node) != 1:
-                stringForChildren = "for x in children: "
-            output = self.indentationMethod(node) + stringForChildren + "\n"
             for x in children:
                 output += self.translate(x)
         elif node.getType() == 'task':
@@ -56,7 +52,7 @@ class TranslateAlgorithm:
         parents = node.getParents()
         if parents[0].getType() == 'StartEvent':
             i += "\t"
-        elif parents[0].getType() == 'Sequence' and self.nChildren(parents[0]) == 1:
+        elif parents[0].getType() == 'Sequence' or parents[0].getType() == 'ParallelGateway':
             i += self.indentationMethod(parents[0])
         else:
             i += "\t" + self.indentationMethod(parents[0])
