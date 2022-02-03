@@ -15,7 +15,7 @@ class TranslateAlgorithm:
         children = node.getChildren()
         output = ""
         if node.getType() == 'StartEvent':
-            output = "if __name__ == '__main__':\n"
+            output = self.outputIniziale()
             for x in children:
                 output += self.translate(x)
         if node.getType() == 'ExclusiveGateway' and node.loop == False:
@@ -28,12 +28,26 @@ class TranslateAlgorithm:
                 children[0]) + "if " + node.condition + ":" + "\n " + self.indentationMethod(
                 children[0]) + "\tbreak\n"
         elif node.getType() == 'ParallelGateway':
-            output += self.runInParallel(children, output)
+            output += self.indentationMethod(node) + "runInParallel("
+            nChildren = self.nChildren(node)
+            i = 0
+            while i < nChildren:
+                output += self.translate(children[i])
+                if nChildren - i != 1:
+                    output += ", "
+                i += i + 1
+            output += ")\n"
+
         elif node.getType() == 'Sequence':
             for x in children:
                 output += self.translate(x)
         elif node.getType() == 'task':
-            output = self.indentationMethod(node) + node.name + "\n"
+            parents = node.getParents()
+            grandParent = parents[0].getParents()
+            accapo = ""
+            if grandParent[0].getType() != 'ParallelGateway':
+                accapo += "\n"
+            output = self.indentationMethod(node) + node.name + accapo
         return output
 
     def runInParallel(self, children, output):
@@ -52,6 +66,8 @@ class TranslateAlgorithm:
         parents = node.getParents()
         if parents[0].getType() == 'StartEvent':
             i += "\t"
+        elif node.getType() == 'Sequence' and parents[0].getType() == 'ParallelGateway':
+            return ""
         elif parents[0].getType() == 'Sequence' or parents[0].getType() == 'ParallelGateway':
             i += self.indentationMethod(parents[0])
         else:
@@ -63,3 +79,11 @@ class TranslateAlgorithm:
         for x in node.getChildren():
             i += 1
         return i
+
+    def outputIniziale(self):
+        output = "from multiprocessing import Process\n\n"
+        output += "def runInParallel(*fns):\n\tproc = []\n\tfor fn in fns:\n\t\tp = Process(" \
+                  "target=fn)\n\t\tp.start()\n\t\tproc.append(p)\n\tfor p in " \
+                  "proc:\n\t\tp.join()\n\n\n "
+        output += "if __name__ == '__main__':\n"
+        return output
