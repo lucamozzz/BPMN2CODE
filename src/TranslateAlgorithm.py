@@ -23,10 +23,8 @@ class TranslateAlgorithm:
                 children[0]) + self.indentationMethod(node) + "else : \n " + self.translate(
                 children[1]) + "\n"
         elif node.getType() == 'ExclusiveGateway' and node.loop == True:
-            output = self.indentationMethod(node) + "while(True): \n " + self.translate(
-                children[0]) + self.indentationMethod(
-                children[0]) + "if " + node.condition + ":" + "\n " + self.indentationMethod(
-                children[0]) + "\tbreak\n"
+            output = self.indentationMethod(node) + "while("+node.condition+"): \n " + self.translate(
+                children[0]) + "\n"
         elif node.getType() == 'ParallelGateway':
             output += self.indentationMethod(node) + "runInParallel("
             nChildren = self.nChildren(node)
