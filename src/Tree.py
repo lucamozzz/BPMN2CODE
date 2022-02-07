@@ -39,6 +39,9 @@ class Tree:
             self.sons.append(node)
         self.size += 1
 
+    def insert_in(self, index, node):
+        self.sons.insert(index, node)
+
     def build_tree(self):
         self.__build_tree()
         self.__check_tree()
@@ -90,8 +93,10 @@ class Tree:
                 n.getParents().remove(p)
                 p.getChildren().remove(n)
                 n.setLoop(True)
+                n.setCondition(p.getCondition())
+                p.setCondition("")
                 p.setExit(True)
-                p.setLoop(False)
+                p.setLoop(True)
                 for figlio in p.getChildren():
                     if figlio.getType() != "EndEvent" and figlio != n:
                         for padreDiLoop in p.getParents():
@@ -109,19 +114,22 @@ class Tree:
             return figlio
 
     def __visit_and_set_child_to_root(self):
-        for n in self.sons:
+        for n in self.sons[0].getChildren():
             if n.getType() == 'ExclusiveGateway' or n.getType() == 'ParallelGateway':
                 if not n.getIsExit():
                     self.countOpen += 1
                     self.__visit(n)
-                    if self.countOpen == 0:
-                        self.__set_sequence_node_to_start()
-                        break
+            elif n.getType() == 'task':
+                self.__visit(n)
+            else:
+                continue
+            if self.countOpen == 0:
+                self.__set_sequence_node_to_start()
+                break
 
     def __visit(self, n):
         for figlio in n.getChildren():
-            if (figlio.getType() == 'ExclusiveGateway' and not figlio.getLoop()) or (
-                    figlio.getType() == 'ParallelGateway'):
+            if figlio.getType() == 'ExclusiveGateway' or figlio.getType() == 'ParallelGateway':
                 if not figlio.getIsExit():
                     self.countOpen += 1
                 else:
@@ -129,8 +137,9 @@ class Tree:
                     self.__check_ric_on_new_child_of_root(figlio)
                 self.ric_component(figlio)
             elif figlio.getType() == 'task':
-                # se figlio è una foglia (task) e ha come figlio un nodo di uscita:
-                self.ric_component(figlio)
+                self.ric_child_in_component(figlio)
+
+    flag = False
 
     def ric_component(self, figlio):
         self.flagEnd = False
@@ -139,26 +148,34 @@ class Tree:
             if f.getType() == 'EndEvent':
                 self.flagEnd = True
                 break
-            if (f.getType() == 'ExclusiveGateway' and not f.getLoop()) or f.getType() != 'task':
+            if f.getType() != 'task':
                 if not f.getIsExit():
                     self.countOpen += 1
                     self.ric_component(f)
                 else:
+                    count = self.countOpen
                     self.__check_exit_node(f)
                     self.temp_lis_to_exit_node.append(f)
-                    self.ric_component(f)
-            else:
-                if f.getType() == 'task':
-                    for ff in f.getChildren():
-                        if not ff.getIsExit():
-                            self.ric_child_in_component(f)
+                    if self.countOpen != count:
+                        if not self.flag:
+                            self.temp_lis_to_exit_node.remove(f)
+                            self.flag = True
                         else:
-                            if self.flagExit is False and not self.temp_lis_to_exit_node.__contains__(ff):
-                                self.flagExit = True
-                                self.__check_exit_node(ff)
-                                self.temp_lis_to_exit_node.append(ff)
-                            elif self.flagExit:
-                                self.flagExit = False
+                            self.flag = False
+                        if self.countOpen == 0:
+                            self.flagEnd = True
+                        return
+            elif f.getType() == 'task':
+                for ff in f.getChildren():
+                    if not ff.getIsExit():
+                        self.ric_child_in_component(f)
+                    else:
+                        if self.flagExit is False and not self.temp_lis_to_exit_node.__contains__(ff):
+                            self.flagExit = True
+                        elif self.flagExit:
+                            self.__check_exit_node(ff)
+                            self.temp_lis_to_exit_node.append(ff)
+                            self.flagExit = False
             node = f
         if not self.flagEnd:
             self.ric_component(node)
@@ -169,26 +186,21 @@ class Tree:
             self.__check_ric_on_new_child_of_root(f)
 
     def __check_ric_on_new_child_of_root(self, f):
-        if (self.countOpen == 0 and f.getType() != 'task') or \
-                (self.countOpen == 0 and f.getType() == 'ExclusiveGateway' and not f.getLoop()):
+        if self.countOpen == 0:
             self.__set_child_to_root(f)
 
     def ric_child_in_component(self, figlio):
-        # due casi: 1. il figlio è un altra foglia, 2. il figlio è un component
         if figlio.getType() == 'task':
             for child in figlio.getChildren():
                 if child.getType() == 'task':
                     self.ric_child_in_component(child)
                 else:
-                    if not child.getIsExit() and child.getType() == 'ParallelGateway' or \
-                            (child.getType() == 'ExclusiveGateway' and not child.getLoop() and not child.getIsExit()):
-                        self.countOpen += 1
-                        self.ric_component(child)
-                    elif child.getType() == 'ExclusiveGateway' and child.getLoop():
-                        self.ric_component(child)
-                    else:
-                        self.countOpen -= 1
-                        self.__check_ric_on_new_child_of_root(child)
+                    if child.getType() != 'task':
+                        if not child.getIsExit():
+                            self.countOpen += 1
+                            self.ric_component(child)
+                        else:
+                            self.ric_component(figlio)
         else:
             self.ric_component(figlio)
 
@@ -208,10 +220,8 @@ class Tree:
         seq = None
         for figlio in self.sons[0].getChildren():
             if figlio.getType() == "Sequence":
-                for child in figlio.getChildren():
-                    if child.getType() != "task":
-                        self.__ric_set_sequence(child, seq)
-
+                for _ in figlio.getChildren():
+                    self.__ric_set_sequence(figlio, seq)
     count = 0
 
     def __ric_set_sequence(self, nodoApertura, seq):
@@ -239,6 +249,7 @@ class Tree:
                                                 if not seq.getChildren().__contains__(f):
                                                     seq.addChild(f)
                                                     f.addParent(seq)
+                                                    self.count += 1
                                                     self.__ric_set_sequence(f, seq)
             else:
                 if self.count >= 1:

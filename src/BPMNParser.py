@@ -41,7 +41,6 @@ class BPMNParser:
             node = EndNode(child.get('id'))
         elif child.tag.__contains__('exclusiveGateway'):
             node = ExclusiveGatewayNode(child.get('id'))
-            self.__set_attrib_to_node(child, node)
         elif child.tag.__contains__('parallelGateway'):
             node = ParallelGatewayNode(child.get('id'))
         elif child.tag.__contains__('task'):
@@ -54,12 +53,36 @@ class BPMNParser:
             if key == 'name':
                 if node.getType() == 'task':
                     node.setName(child.attrib[key])
-                elif node.getType() == 'ExclusiveGateway':
-                    node.setCondition(child.attrib[key])
+
+    def setCondition(self):
+        sourceRef = None
+        targetRef = None
+        condition = None
+        for sf in self.sequenceFlows:
+            for key in sf.attrib:
+                if key == 'sourceRef':
+                    sourceRef = sf.attrib[key]
+                if key == 'name':
+                    condition = sf.attrib[key]
+                if key == 'targetRef':
+                    targetRef = sf.attrib[key]
+            if condition is not None and sourceRef is not None and targetRef is not None:
+                for el in self.nodes:
+                    if sourceRef == el.id:
+                        if el.condition == "":
+                            el.setCondition(condition)
+                        for child in el.getChildren():
+                            if child.id == sf.attrib['id']:
+                                el.getChildren().remove(child)
+                                el.addChildIn(0, child)
+                                sourceRef = None
+                                targetRef = None
+                        condition = None
 
     def connect_nodes(self):
         self.__set_child_incoming_outgoing()
         self.__set_exit_or_loop_node()
+        self.setCondition()
         for n in self.nodes:
             self.tree.insert(n)
 
