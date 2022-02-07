@@ -20,10 +20,10 @@ class TranslateAlgorithm:
                 output += self.translate(x)
         if node.getType() == 'ExclusiveGateway' and node.loop == False:
             output = self.indentationMethod(node) + "if " + node.condition + ":" + " \n" + self.translate(
-                children[0]) + self.indentationMethod(node) + "else : \n " + self.translate(
+                children[0]) + self.indentationMethod(node) + "else: \n " + self.translate(
                 children[1]) + "\n"
         elif node.getType() == 'ExclusiveGateway' and node.loop == True:
-            output = self.indentationMethod(node) + "while("+node.condition+"): \n " + self.translate(
+            output = self.indentationMethod(node) + "while " + node.condition + ": \n " + self.translate(
                 children[0]) + "\n"
         elif node.getType() == 'ParallelGateway':
             output += self.indentationMethod(node) + "runInParallel("
@@ -63,7 +63,7 @@ class TranslateAlgorithm:
         i = ""
         parents = node.getParents()
         if parents[0].getType() == 'StartEvent':
-            i += "\t"
+            i += "\t\t"
         elif node.getType() == 'Sequence' and parents[0].getType() == 'ParallelGateway':
             return ""
         elif parents[0].getType() == 'Sequence' or parents[0].getType() == 'ParallelGateway':
@@ -80,8 +80,9 @@ class TranslateAlgorithm:
 
     def outputIniziale(self):
         output = "from multiprocessing import Process\n\n"
-        output += "def runInParallel(*fns):\n\tproc = []\n\tfor fn in fns:\n\t\tp = Process(" \
-                  "target=fn)\n\t\tp.start()\n\t\tproc.append(p)\n\tfor p in " \
-                  "proc:\n\t\tp.join()\n\n\n "
-        output += "if __name__ == '__main__':\n"
+        output += "class Result:\n\n"
+        output += "\tdef runInParallel(*fns):\n\t\tproc = []\n\t\tfor fn in fns:\n\t\t\tp = Process(" \
+                  "target=fn)\n\t\t\tp.start()\n\t\t\tproc.append(p)\n\t\tfor p in " \
+                  "proc:\n\t\t\tp.join()\n\n\n "
+        output += "\tif __name__ == '__main__':\n"
         return output
