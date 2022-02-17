@@ -6,6 +6,7 @@ class Node:
         self.children = list()
         self.type = type
         self.isExit = isExit
+        self.visited = False
 
     def getId(self):
         return self.id
@@ -30,6 +31,12 @@ class Node:
             return True
         else:
             return False
+
+    def isVisited(self):
+        return self.visited
+
+    def setVisited(self, flag):
+        self.visited = flag
 
     def getType(self):
         return self.type
