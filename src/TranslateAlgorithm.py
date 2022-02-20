@@ -83,6 +83,6 @@ class TranslateAlgorithm:
         output += "class Result:\n\n"
         output += "\tdef runInParallel(*fns):\n\t\tproc = []\n\t\tfor fn in fns:\n\t\t\tp = Process(" \
                   "target=fn)\n\t\t\tp.start()\n\t\t\tproc.append(p)\n\t\tfor p in " \
-                  "proc:\n\t\t\tp.join()\n\n\n "
-        output += "\tif __name__ == '__main__':\n"
+                  "proc:\n\t\t\tp.join()\n\n\n"
+        output += "if __name__ == '__main__':\n"
         return output

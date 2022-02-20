@@ -6,6 +6,7 @@ from ExclusiveGatewayNode import ExclusiveGatewayNode
 from ParallelGatewayNode import ParallelGatewayNode
 from StartNode import StartNode
 from Tree import Tree
+from src.GestoreAlbero import GestoreAlbero
 from src.IncomingNode import IncomingNode
 from src.OutgoingNode import OutgoingNode
 
@@ -13,7 +14,8 @@ from src.OutgoingNode import OutgoingNode
 class BPMNParser:
 
     def __init__(self, source):
-        self.tree = Tree()
+        self.gestoreAlbero = GestoreAlbero()
+        self.tree = self.gestoreAlbero.create_tree()
         self.source = source
         self.root = et.parse(source).getroot().find('{http://www.omg.org/spec/BPMN/20100524/MODEL}process')
         self.tree.set_root(self.root)
@@ -24,7 +26,6 @@ class BPMNParser:
 
     def parse_nodes(self):
         for child in self.root:
-            # --NODI PER SETTARE NODO EXIT O LOOP
             if child.tag.__contains__('association'):
                 self.connections.append(child)
             elif child.tag.__contains__('textAnnotation'):
