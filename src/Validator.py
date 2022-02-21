@@ -37,15 +37,16 @@ class Validator:
     def __check_gateway_balance(self):
         nodes = self.source.getNodes()
         e = 0
+        i = 0
         for node in nodes:
             if node.getType() == 'ExclusiveGateway' or node.getType() == 'ParallelGateway':
                 if node.getIsExit():
                     e = e - 1
                 else:
                     e = e + 1
-        if e < 0:
+        if i < 0:
             print("Found ({}) closing gateway(s) without a opening gateway".format(e))
-        if e > 0:
+        if i > 0:
             print("Found ({}) opening gateway(s) without a closing gateway".format(e))
 
     # Checks if text annotations contain something different
@@ -64,8 +65,11 @@ class Validator:
         i = 0
         for node in nodes:
             if node.getType() == 'ExclusiveGateway':
-                if not node.getIsExit() and node.getCondition() == '':
-                    i = i + 1
+                if not node.getIsExit():
+                    for con in self.source.getConnections():
+                        if con.attrib['sourceRef'] == node.getId():
+                            if node.getCondition == '':
+                                i = i + 1
         if i > 0:
             print("({}) exclusive gateway(s) missing condition. Please define one.".format(i))
 
@@ -73,13 +77,14 @@ class Validator:
     def __check_single_entrance(self):
         nodes = self.source.getNodes()
         i = 0
+        a = 0
         for node in nodes:
             if node.getType() == 'ExclusiveGateway' or node.getType() == 'ParallelGateway':
                 if not node.getIsExit():
                     for s in self.source.getSequenceFlows():
                         if s.get('targetRef') == node.getId():
                             i = i + 1
-                    if i > 1:
+                    if a > 1:
                         if not node.getLoop():
                             print("Found an opening gateway with more than one entrance or none.")
                     i = 0

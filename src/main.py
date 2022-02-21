@@ -1,9 +1,10 @@
+import sys
 from BPMNParser import BPMNParser
-from src.TranslateAlgorithm import TranslateAlgorithm
-from src.Validator import Validator
+from TranslateAlgorithm import TranslateAlgorithm
+from Validator import Validator
 
 if __name__ == '__main__':
-
+    # parser = BPMNParser(sys.argv[1])
     parser = BPMNParser('test.bpmn')
     parser.parse_nodes()
     parser.connect_nodes()
@@ -11,8 +12,4 @@ if __name__ == '__main__':
     validator.validate()
     tree = parser.tree.build_tree()
     translator = TranslateAlgorithm()
-    result = open('Result.py', 'w')
-    print(translator.translate(tree.get_root()), file=result)
-
-
-
+    print(translator.translate(tree.get_root()))
