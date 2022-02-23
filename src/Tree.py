@@ -1,6 +1,5 @@
 from Node import Node
 from SequenceNode import SequenceNode
-from src.GestoreAlbero import GestoreAlbero
 
 
 class Tree:
@@ -182,6 +181,7 @@ class Tree:
     flagExitSequenceNode = False
 
     def __ric_set_sequence(self, nodoApertura, seq):
+        # todo - refactoring. [fixare] bug.
         for figlio in nodoApertura.getChildren():
             if not self.flagExitSequenceNode:
                 if figlio.getType() == "task":
@@ -207,11 +207,15 @@ class Tree:
                                                             seq.addChild(f)
                                                             f.addParent(seq)
                                                             self.countChildSeq += 1
+                                                            if f.getType() != 'task':
+                                                                self.countChildSeq = 0
                                                             self.__ric_set_sequence(f, seq)
                                                             break
                             figlio.getChildren().remove(nipote)
                     else:
-                        self.__ric_set_sequence(figlio, seq)
+                        self.flagExitSequenceNode = True
+                        self.countChildSeq = 0
+                        break
                 else:
                     if not self.sons[0].getChildren()[0].getChildren().__contains__(figlio):
                         if not figlio.getIsExit() and figlio.getType() != 'EndEvent':
@@ -220,7 +224,14 @@ class Tree:
                                 self.countChildSeq = 0
                             else:
                                 seq = self.__setChildParent(figlio, nodoApertura)
-                        self.__ric_set_sequence(figlio, seq)
+                            self.__ric_set_sequence(figlio, seq)
+                        else:
+                            for next in figlio.getChildren():
+                                if self.sons[0].getChildren()[0].getChildren().__contains__(next):
+                                    self.countChildSeq = 0
+                                    return
+                                else:
+                                    self.__ric_set_sequence(figlio, seq)
                     else:
                         self.flagExitSequenceNode = True
                         self.countChildSeq = 0
@@ -272,6 +283,7 @@ class Tree:
         self.size -= 1
         self.__check_exitNode_and_remove()
         self.__remove_endEvent()
+        self.order_tree()
 
     def __check_exitNode_and_remove(self):
         for el in self.to_remove:
@@ -288,3 +300,14 @@ class Tree:
             if n.getIsExit():
                 self.sons.remove(n)
                 self.size -= 1
+
+    old_tree = None
+
+    def order_tree(self):
+        for gateway in self.sons:
+            if gateway.getType() == 'ExclusiveGateway':
+                if len(gateway.getChildren()) > 1:
+                    for figlio in gateway.getChildren():
+                        if gateway.getChildren().index(figlio) == 1:
+                            gateway.getChildren().remove(figlio)
+                            gateway.addChildIn(0, figlio)

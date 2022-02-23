@@ -1,14 +1,18 @@
-from src.Tree import Tree
-
 class GestoreAlbero:
 
-    def __init__(self):
-        self.trees = list()
+    _trees = list()
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if not isinstance(cls._instance, cls):
+            cls._instance = object.__new__(cls)
+        return cls._instance
 
     def get_trees(self):
-        return self.trees
+        return self._trees
 
     def create_tree(self):
+        from Tree import Tree
         tree = Tree()
-        self.trees.append(tree)
+        self._trees.append(tree)
         return Tree()

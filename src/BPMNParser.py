@@ -5,10 +5,9 @@ from EndNode import EndNode
 from ExclusiveGatewayNode import ExclusiveGatewayNode
 from ParallelGatewayNode import ParallelGatewayNode
 from StartNode import StartNode
-from Tree import Tree
-from src.GestoreAlbero import GestoreAlbero
-from src.IncomingNode import IncomingNode
-from src.OutgoingNode import OutgoingNode
+from GestoreAlbero import GestoreAlbero
+from IncomingNode import IncomingNode
+from OutgoingNode import OutgoingNode
 
 
 class BPMNParser:
@@ -70,15 +69,16 @@ class BPMNParser:
             if condition is not None and sourceRef is not None and targetRef is not None:
                 for el in self.nodes:
                     if sourceRef == el.id:
-                        if el.condition == "":
-                            el.setCondition(condition)
-                        for child in el.getChildren():
-                            if child.id == sf.attrib['id']:
-                                el.getChildren().remove(child)
-                                el.addChildIn(0, child)
-                                sourceRef = None
-                                targetRef = None
-                        condition = None
+                        if el.getType() == 'ExclusiveGateway':
+                            if el.condition == "":
+                                el.setCondition(condition)
+                                for child in el.getChildren():
+                                    if child.id == sf.attrib['id']:
+                                        el.getChildren().remove(child)
+                                        el.addChildIn(0, child)
+                                        sourceRef = None
+                                        targetRef = None
+                                condition = None
 
     def connect_nodes(self):
         self.__set_child_incoming_outgoing()

@@ -1,12 +1,4 @@
-import xml.etree.ElementTree as et
 from multiprocessing import Process
-
-from AnnotationNode import AnnotationNode
-from CallActivityNode import CallActivityNode
-from EndNode import EndNode
-from ExclusiveGatewayNode import ExclusiveGatewayNode
-from ParallelGatewayNode import ParallelGatewayNode
-from StartNode import StartNode
 
 
 class TranslateAlgorithm:
