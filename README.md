@@ -1,7 +1,6 @@
 # BPMN2CODE
-<img width="250px" src="https://user-images.githubusercontent.com/76916015/155765482-95393cab-49b6-4957-99a5-6807ca8cb207.png"/>
-<br>
-Tool that generates Python code starting from a BPMN model
+<img width="250px" src="https://user-images.githubusercontent.com/76916015/155816270-7e7eadec-6535-4c9c-8022-7dae5ace7395.jpeg"/>
+BPMN2CODE allows you to translate BPMN models into Python code
 
 ## Introduction
 I Multi-Robot Systems (MRSs) consistono in un gruppo di robot atti a cooperare al fine di eseguire una mission in maniera più efficiente di un Single-Robot System. Inoltre, i MRSs presentano caratteristiche vantaggiose come, ad esempio, una maggior affidabilità, versatilità e scalabilità, rispetto ai Single-Robot Systems. Sebbene esistano framework che facilitano il processo di programmazione e coordinazione dei robot che costituiscono un MRS, tale lavoro richiede comunque un alto livello di conoscenze ed abilità.
