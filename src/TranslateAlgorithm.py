@@ -24,7 +24,7 @@ class TranslateAlgorithm:
                 output += self.translate(children[i])
                 if nChildren - i != 1:
                     output += ", "
-                i += i + 1
+                i += 1
             output += ")\n"
 
         elif node.getType() == 'Sequence':
@@ -54,7 +54,7 @@ class TranslateAlgorithm:
 
     def nChildren(self, node):
         i = 0
-        for x in node.getChildren():
+        for _ in node.getChildren():
             i += 1
         return i
 
