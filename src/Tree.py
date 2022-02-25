@@ -76,22 +76,21 @@ class Tree:
 
     def __check_tree_is_correct(self):
         for nodo in self.__sons:
-            for f in nodo.getChildren():
-                if f.getType() == 'IncomingNode' or f.getType() == 'OutgoingNode':
-                    self.__build_tree()
+            for _ in filter(lambda el: el.getType() == 'IncomingNode' or el.getType() == 'OutgoingNode',
+                            nodo.getChildren()):
+                self.__build_tree()
 
     def __case_loop(self):
-        for n in self.__sons:
-            if n.getType() == 'ExclusiveGateway':
-                for p in n.getParents():
-                    if p.getType() == 'ExclusiveGateway' and p.getLoop() and not n.getIsExit():
-                        n.getParents().remove(p)
-                        p.getChildren().remove(n)
-                        n.setLoop(True)
-                        n.setCondition(p.getCondition())
-                        p.setCondition("")
-                        p.setExit(True)
-                        p.setLoop(True)
+        for n in filter(lambda el: el.getType() == 'ExclusiveGateway', self.__sons):
+            for p in filter(lambda el: el.getType() == 'ExclusiveGateway' and el.getLoop() and not el.getIsExit(),
+                            n.getParents()):
+                n.getParents().remove(p)
+                p.getChildren().remove(n)
+                n.setLoop(True)
+                n.setCondition(p.getCondition())
+                p.setCondition("")
+                p.setExit(True)
+                p.setLoop(True)
 
     def __set_child_to_root(self, n):
         if not n.getIsExit() and not n.getType() == 'EndEvent':
@@ -172,11 +171,11 @@ class Tree:
 
     def __setSequence(self):
         seq = None
-        for figlio in self.__sons[0].getChildren():
-            if figlio.getType() == "Sequence":
-                for f in figlio.getChildren():
-                    if f.getType() != 'task' and f.getType() != "Sequence":
-                        self.__ric_set_sequence(f, seq)
+        filter(lambda el: el.getType() == "Sequence", self.__sons[0].getChildren())
+        for figlio in filter(lambda el: el.getType() == "Sequence", self.__sons[0].getChildren()):
+            for f in filter(lambda el: el.getType() != "Sequence" and el.getType() != 'task', figlio.getChildren()):
+                self.__countChildSeq = 0
+                self.__ric_set_sequence(f, seq)
 
     def __ric_set_sequence(self, nodoApertura, seq):
         for figlio in nodoApertura.getChildren():
@@ -199,6 +198,7 @@ class Tree:
                     self.__countChildSeq = 0
                     return
                 else:
+                    self.__countChildSeq = 0
                     self.__ric_set_sequence(figlio, seq)
         return seq
 
@@ -235,8 +235,7 @@ class Tree:
         nodoApertura.addChildIn(0, seq)
         nodoApertura.getChildren().remove(figlio)
         seq.addChild(figlio)
-        for padre in figlio.getParents():
-            figlio.getParents().remove(padre)
+        map(lambda p: figlio.getParents().remove(p), figlio.getParents())
         figlio.addParent(seq)
         self.insert(seq)
         return seq
@@ -244,30 +243,24 @@ class Tree:
     to_remove = list()
 
     def __remove_parent_or_child_in_sequence_node(self):
-        for seq in self.__sons:
-            if seq.getType() == 'Sequence':
-                for figlio in seq.getChildren():
-                    for padre in figlio.getParents():
-                        if padre.getType() != 'Sequence':
-                            figlio.getParents().remove(padre)
-                        if not figlio.getParents().__contains__(seq):
-                            figlio.addParent(seq)
-                    for child in figlio.getChildren():
-                        if child.getType() != 'Sequence':
-                            figlio.getChildren().remove(child)
+        for seq in filter(lambda s: s.getType() == "Sequence", self.__sons):
+            for figlio in seq.getChildren():
+                for padre in filter(lambda el: el.getType() != "Sequence", figlio.getParents()):
+                    figlio.getParents().remove(padre)
+                    if not figlio.getParents().__contains__(seq):
+                        figlio.addParent(seq)
+                map(lambda child: figlio.getChildren().remove(child),
+                    filter(lambda el: el.getType() != "Sequence", figlio.getChildren()))
 
     def __complete_tree(self):
         self.__remove_parent_or_child_in_sequence_node()
         for nodoExit in filter(lambda nEx: nEx.getIsExit(), self.__sons):
             self.to_remove.append(nodoExit)
-            for node in self.__sons:
-                if node.getChildren().__contains__(nodoExit):
-                    node.getChildren().remove(nodoExit)
-                if node.getParents().__contains__(nodoExit):
-                    node.getParents().remove(nodoExit)
-        for f in filter(lambda figlio: figlio.getType() == "EndEvent", nodoExit.getChildren()):
-            nodoExit.getChildren().remove(f)
-            self.to_remove.append(nodoExit)
+            map(lambda x: x.getChildren().remove(nodoExit),
+                filter(lambda el: nodoExit in el.getChildren(), self.__sons))
+            map(lambda x: x.getParents().remove(nodoExit), filter(lambda el: nodoExit in el.getParents(), self.__sons))
+        map(lambda x: nodoExit.getChildren().remove(x) and self.to_remove.append(nodoExit),
+            filter(lambda figlio: figlio.getType() == "EndEvent", nodoExit.getChildren()))
         self.set_root(self.__sons[0])
         self.__sons.remove(self.__sons[0])
         self.__size -= 1
@@ -292,10 +285,9 @@ class Tree:
                 self.__size -= 1
 
     def __order_tree(self):
-        for gateway in self.__sons:
-            if gateway.getType() == 'ExclusiveGateway':
-                if len(gateway.getChildren()) > 1:
-                    for figlio in gateway.getChildren():
-                        if gateway.getChildren().index(figlio) == 1:
-                            gateway.getChildren().remove(figlio)
-                            gateway.addChildIn(0, figlio)
+        for gateway in filter(lambda el: el.getType() == 'ExclusiveGateway', self.__sons):
+            if len(gateway.getChildren()) > 1:
+                for figlio in gateway.getChildren():
+                    if gateway.getChildren().index(figlio) == 1:
+                        gateway.getChildren().remove(figlio)
+                        gateway.addChildIn(0, figlio)
