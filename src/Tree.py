@@ -165,7 +165,8 @@ class Tree:
             seq.addChild(child)
             child.getParents().remove(self.__sons[0])
             child.addParent(seq)
-        map(lambda c: self.__sons[0].getChildren().remove(c), seq.getChildren())
+        for child in seq.getChildren():
+            self.__sons[0].getChildren().remove(child)
         self.__sons[0].addChild(seq)
         self.insert(seq)
 
