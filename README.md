@@ -1,4 +1,6 @@
 # BPMN2CODE
+<img width="250px" src="https://user-images.githubusercontent.com/76916015/155765482-95393cab-49b6-4957-99a5-6807ca8cb207.png"/>
+<br>
 Tool that generates Python code starting from a BPMN model
 
 ## Introduction
