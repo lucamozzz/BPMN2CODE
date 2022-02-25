@@ -5,20 +5,20 @@ class ExclusiveGatewayNode(Node):
 
     def __init__(self, node_id):
         super().__init__(node_id, 'ExclusiveGateway', False)
-        self.condition = ''
-        self.loop = False
+        self.__condition = ''
+        self.__loop = False
 
     def setExit(self, exit):
         self.isExit = exit
 
     def setLoop(self, loop):
-        self.loop = loop
+        self.__loop = loop
 
     def setCondition(self, condition):
-        self.condition = condition
+        self.__condition = condition
 
     def getCondition(self):
-        return self.condition
+        return self.__condition
 
     def getLoop(self):
-        return self.loop
+        return self.__loop

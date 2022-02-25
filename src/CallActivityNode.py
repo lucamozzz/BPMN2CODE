@@ -5,10 +5,10 @@ class CallActivityNode(Node):
 
     def __init__(self, node_id):
         super().__init__(node_id, 'task', False)
-        self.name = ''
+        self.__name = ''
 
     def getName(self):
-        return self.name
+        return self.__name
 
     def setName(self, name):
-        self.name = name
+        self.__name = name

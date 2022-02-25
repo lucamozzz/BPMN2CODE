@@ -6,7 +6,7 @@ from BPMNParser import BPMNParser
 class Validator:
 
     def __init__(self, source: BPMNParser):
-        self.source = source
+        self.__source = source
 
     def validate(self):
         self.__check_start_end()
@@ -19,7 +19,7 @@ class Validator:
     # Checks if there is more than one StartEvent
     # as well as EndEvents
     def __check_start_end(self):
-        nodes = self.source.getNodes()
+        nodes = self.__source.getNodes()
         s, e = 0, 0
         for node in nodes:
             if node.getType() == 'StartEvent':
@@ -35,7 +35,7 @@ class Validator:
 
     # Checks if opened gateways get closed
     def __check_gateway_balance(self):
-        nodes = self.source.getNodes()
+        nodes = self.__source.getNodes()
         e = 0
         i = 0
         for node in nodes:
@@ -52,7 +52,7 @@ class Validator:
     # Checks if text annotations contain something different
     # than 'exit' or 'loop' keywords
     def __check_annotations(self):
-        annotations = self.source.getAnnotations()
+        annotations = self.__source.getAnnotations()
         for ann in annotations:
             value = ann.getValue()
             if value != 'exit' and value != 'loop':
@@ -61,12 +61,12 @@ class Validator:
 
     # Checks if exclusive gateways define a condition
     def __check_conditions(self):
-        nodes = self.source.getNodes()
+        nodes = self.__source.getNodes()
         i = 0
         for node in nodes:
             if node.getType() == 'ExclusiveGateway':
                 if not node.getIsExit():
-                    for con in self.source.getConnections():
+                    for con in self.__source.getConnections():
                         if con.attrib['sourceRef'] == node.getId():
                             if node.getCondition == '':
                                 i = i + 1
@@ -75,13 +75,13 @@ class Validator:
 
     # Checks if a block has a single way in
     def __check_single_entrance(self):
-        nodes = self.source.getNodes()
+        nodes = self.__source.getNodes()
         i = 0
         a = 0
         for node in nodes:
             if node.getType() == 'ExclusiveGateway' or node.getType() == 'ParallelGateway':
                 if not node.getIsExit():
-                    for s in self.source.getSequenceFlows():
+                    for s in self.__source.getSequenceFlows():
                         if s.get('targetRef') == node.getId():
                             i = i + 1
                     if a > 1:
@@ -91,12 +91,12 @@ class Validator:
 
     # Checks if a block has a single way out
     def __check_single_exit(self):
-        nodes = self.source.getNodes()
+        nodes = self.__source.getNodes()
         i = 0
         for node in nodes:
             if node.getType() == 'ExclusiveGateway' or node.getType() == 'ParallelGateway':
                 if node.getIsExit():
-                    for s in self.source.getSequenceFlows():
+                    for s in self.__source.getSequenceFlows():
                         if s.get('sourceRef') == node.getId():
                             i = i + 1
                     if i > 1:

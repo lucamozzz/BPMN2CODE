@@ -1,5 +1,3 @@
-from multiprocessing import Process
-
 
 class TranslateAlgorithm:
 
@@ -10,15 +8,16 @@ class TranslateAlgorithm:
             output = self.outputIniziale()
             for x in children:
                 output += self.translate(x)
-        if node.getType() == 'ExclusiveGateway' and node.loop == False:
-            output = self.indentationMethod(node) + "if " + node.condition + ":" + " \n" + self.translate(
+        if node.getType() == 'ExclusiveGateway' and not node.getLoop():
+            output = self.indentationMethod(node) + "if " + node.getCondition() + ":" + " \n" + self.translate(
                 children[0]) + self.indentationMethod(node) + "else: \n " + self.translate(
-                children[1]) + "\n"
-        elif node.getType() == 'ExclusiveGateway' and node.loop == True:
-            output = self.indentationMethod(node) + "while " + node.condition + ": \n " + self.translate(
-                children[0]) + "\n"
+                children[1])
+        elif node.getType() == 'ExclusiveGateway' and node.getLoop():
+            output = self.indentationMethod(node) + "while " + node.getCondition() + ": \n " + self.translate(
+                children[0])
         elif node.getType() == 'ParallelGateway':
-            output += self.indentationMethod(node) + "runInParallel("
+            output += self.indentationMethod(node) + "result = Result()\n"
+            output += self.indentationMethod(node) + "result.runInParallel("
             nChildren = self.nChildren(node)
             i = 0
             while i < nChildren:
@@ -37,18 +36,7 @@ class TranslateAlgorithm:
             accapo = ""
             if grandParent[0].getType() != 'ParallelGateway':
                 accapo += "\n"
-            output = self.indentationMethod(node) + node.name + accapo
-        return output
-
-    def runInParallel(self, children, output):
-        proc = []
-        for x in children:
-            p = Process(name=self.translate(x))
-            p.start()
-            output += self.indentationMethod(x) + str(p.name)
-            proc.append(p)
-        for p in proc:
-            p.join()
+            output = self.indentationMethod(node) + node.getName() + accapo
         return output
 
     def indentationMethod(self, node):

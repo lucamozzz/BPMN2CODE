@@ -13,25 +13,25 @@ from OutgoingNode import OutgoingNode
 class BPMNParser:
 
     def __init__(self, source):
-        self.gestoreAlbero = GestoreAlbero()
-        self.tree = self.gestoreAlbero.create_tree()
-        self.source = source
-        self.root = et.parse(source).getroot().find('{http://www.omg.org/spec/BPMN/20100524/MODEL}process')
-        self.tree.set_root(self.root)
-        self.connections = []
-        self.annotations = []
-        self.nodes = []
-        self.sequenceFlows = []
+        self.__gestoreAlbero = GestoreAlbero()
+        self.__tree = self.__gestoreAlbero.create_tree()
+        self.__source = source
+        self.__root = et.parse(source).getroot().find('{http://www.omg.org/spec/BPMN/20100524/MODEL}process')
+        self.__tree.set_root(self.__root)
+        self.__connections = []
+        self.__annotations = []
+        self.__nodes = []
+        self.__sequenceFlows = []
 
     def parse_nodes(self):
-        for child in self.root:
+        for child in self.__root:
             if child.tag.__contains__('association'):
-                self.connections.append(child)
+                self.__connections.append(child)
             elif child.tag.__contains__('textAnnotation'):
                 id = child.get('id')
                 text = child[0].text
                 annotation = AnnotationNode(id, text)
-                self.annotations.append(annotation)
+                self.__annotations.append(annotation)
 
     def object_type_of_node(self, child):
         node = ''
@@ -58,7 +58,7 @@ class BPMNParser:
         sourceRef = None
         targetRef = None
         condition = None
-        for sf in self.sequenceFlows:
+        for sf in self.__sequenceFlows:
             for key in sf.attrib:
                 if key == 'sourceRef':
                     sourceRef = sf.attrib[key]
@@ -67,13 +67,13 @@ class BPMNParser:
                 if key == 'targetRef':
                     targetRef = sf.attrib[key]
             if condition is not None and sourceRef is not None and targetRef is not None:
-                for el in self.nodes:
-                    if sourceRef == el.id:
+                for el in self.__nodes:
+                    if sourceRef == el.getId():
                         if el.getType() == 'ExclusiveGateway':
-                            if el.condition == "":
+                            if el.getCondition() == "":
                                 el.setCondition(condition)
                                 for child in el.getChildren():
-                                    if child.id == sf.attrib['id']:
+                                    if child.getId() == sf.attrib['id']:
                                         el.getChildren().remove(child)
                                         el.addChildIn(0, child)
                                         sourceRef = None
@@ -84,46 +84,47 @@ class BPMNParser:
         self.__set_child_incoming_outgoing()
         self.__set_exit_or_loop_node()
         self.setCondition()
-        for n in self.nodes:
-            self.tree.insert(n)
+        for n in self.__nodes:
+            self.__tree.insert(n)
+        return self.__tree
 
     def getConnections(self):
-        return self.connections
+        return self.__connections
 
     def getNodes(self):
-        return self.nodes
+        return self.__nodes
 
     def getAnnotations(self):
-        return self.annotations
+        return self.__annotations
 
     def getSequenceFlows(self):
-        return self.sequenceFlows
+        return self.__sequenceFlows
 
     def __set_child_incoming_outgoing(self):
-        for child in self.root:
+        for child in self.__root:
             tag_type = child.tag[45:len(child.tag)]
             if tag_type == 'association' or tag_type == 'textAnnotation':
                 continue
             elif tag_type == 'sequenceFlow':
-                self.sequenceFlows.append(child)
+                self.__sequenceFlows.append(child)
             else:
                 node = self.object_type_of_node(child)
                 for conn in child:
                     node.addChild(self.__create_node_in_out(conn))
-                    if not self.nodes.__contains__(node):
-                        self.nodes.append(node)
+                    if not self.__nodes.__contains__(node):
+                        self.__nodes.append(node)
 
     def __set_exit_or_loop_node(self):
-        for connection in self.connections:
+        for connection in self.__connections:
             if connection.tag.__contains__('association'):
-                for el in self.nodes:
-                    if el.id == connection.get('sourceRef'):
+                for el in self.__nodes:
+                    if el.getId() == connection.get('sourceRef'):
                         node = el
-                for annotation in self.annotations:
-                    if annotation.id == connection.get('targetRef'):
-                        if annotation.value == 'exit':
+                for annotation in self.__annotations:
+                    if annotation.getId() == connection.get('targetRef'):
+                        if annotation.getValue() == 'exit':
                             node.setExit(True)
-                        elif annotation.value == 'loop':
+                        elif annotation.getValue() == 'loop':
                             node.setLoop(True)
 
     def __create_node_in_out(self, conn):
