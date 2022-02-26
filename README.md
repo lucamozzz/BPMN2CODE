@@ -44,3 +44,15 @@ class Result:
         else: 
           turn_right()
 ```
+## How to run
+Download the project and from <b>cmd</b> run:
+```bash 
+cd "path project" 
+python3 src/main.py > "destination path"
+```
+## Authors
+<ul>
+ <li><a href = "https://github.com/alessandrotesta-99">Alessandro Testa</a></li>
+ <li><a href = "https://github.com/motsiiih">Luca Mozzoni</a></li>
+ <li><a href = "https://github.com/rpiero99">Riccardo Pierini</a></li>
+</ul>
